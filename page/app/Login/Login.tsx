@@ -2,6 +2,7 @@
 import { useState } from "react";
 import {Button, Input, Card, CardBody} from '@nextui-org/react';
 import { EyeFilledIcon, EyeSlashFilledIcon } from "./Eyes";
+import clickButton from "./LogicScript";
 
 export default function Login(){
     const [isVisible, setIsVisible] = useState(false);
@@ -28,7 +29,7 @@ export default function Login(){
                         type={isVisible ? "text" : "password"}
                         className="max-w-xs w-72"
                         />
-                        <Button color="primary"> Iniciar sesion </Button>
+                        <Button color="primary" onClick={clickButton}> Iniciar sesion </Button>
                     </CardBody>
 
                     </div>
