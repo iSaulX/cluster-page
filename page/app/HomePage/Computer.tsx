@@ -6,7 +6,7 @@ import { Card, CardBody, Dropdown, DropdownItem, DropdownTrigger, DropdownMenu, 
 export default function Computercard(props: any){
 
     return(
-        <Card isBlurred className='flex items-center justify-center flex-col'>
+        <Card isBlurred className='flex items-center justify-center flex-col m-0.5'>
             <CardBody className=' gap-5'>
                 <Computer />
                 <h3 className='text-center'>{props.computerName}</h3>
@@ -18,7 +18,7 @@ export default function Computercard(props: any){
                     <Divider orientation='vertical' />
                     <p className='font-sans p-5'>Estado: <span className={props.status === 'ON' ? 'text-green-500' : 'text-red-200'}></span></p>
                 </div>
-                <Dropdown backdrop='blur'>
+                <Dropdown>
                     <DropdownTrigger>
                         <Button className='relative top-0 left-0'><ConfigurationIcon></ConfigurationIcon>Opciones</Button>
                     </DropdownTrigger>
