@@ -1,16 +1,21 @@
-import express from 'express';
-import cors from 'cors';
-import os from 'os';
+const express = require('express');
+const cors = require('cors');
+const fs = require('fs');
+const bcrypt = require('bcrypt');
+const os = require('os');
+const dotenv = require('dotenv');
+const { createInterface } = require('readline');
+const { Buffer } = require('buffer');
+const { redirect } = require('next/dist/server/api-utils');
+
+
 const app = express();
-import bcrypt from 'bcrypt';
-import dotenv from 'dotenv';
-import fs from 'fs';
-
-
 dotenv.config();
-
-let tokenAuth; 
 app.use(cors());
+let tokenAuth; 
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 
 const checkToken = (req, res, next) => {
     if (req.headers.authorization === tokenAuth){
@@ -20,15 +25,16 @@ const checkToken = (req, res, next) => {
     }
 }
 
-async function generateTokenAuth(username, password){
-    const salt = process.env.SALT;
+function generateTokenAuth(username, password){
+    const saltRounds = 10;
     const textToCrypt = username + password;
-    try {
-        const hash = bcrypt.hash(textToCrypt, salt);
-        return hash;
-    } catch (error) {
-        console.log(error);
-    }
+    bcrypt.hash(textToCrypt, saltRounds, (err, hash) =>{
+        if (err){
+            console.log(err);
+        } else {
+            return hash;
+        }
+    })
 }
 
 async function compareTokenAuth(tokenAuth, username, password){
@@ -64,19 +70,18 @@ function writeJsonFile(filepath, content){
     })
 }
 
-app.post('login', (req, res, next) => {
+app.post('/login', (req, res, next) =>{
     const username = process.env.USERNAME;
     const password = process.env.PASSWORD;
     if (!req.body.username || !req.body.password){
         res.status(400).json({message: 'Solicitud incorrecta'});
     }
     if (req.body.username === username && req.body.password === password){
-        token = generateTokenAuth(username, password);
-        res.status(200).json({token: token});
-    } else {
-        res.status(401).json({message: 'Usuario o contraseña incorrectos'});
+        tokenAuth = generateTokenAuth(username, password);
+        res.status(200).json({message: 'Login correcto', token: tokenAuth});
     }
-});
+})
+
 
 app.get('/computersListed', checkToken, (req, res, next) => {
     const computers = readJsonFile('./data.json');
@@ -93,4 +98,9 @@ app.post('/addComputer', checkToken, (req, res, next) => {
         res.status(400).json({message: 'Solicitud incorrecta'});
     }
 
+})
+
+
+app.listen(8080, () => {
+    console.log('Servidor iniciado');
 })

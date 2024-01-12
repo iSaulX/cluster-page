@@ -5,6 +5,39 @@ import { EyeFilledIcon, EyeSlashFilledIcon } from "./Eyes";
 import clickButton from "./LogicScript";
 
 export default function Login(){
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [data, setData] = useState(null);
+
+    const handleUsername = (e: any) => {
+        setUsername(e.target.value);
+    }
+    const handlePassword = (e: any) => {
+        setPassword(e.target.value);
+    }
+    const login = async () => {
+        setIsLoading(true);
+        fetch('http://127.0.0.1:8080/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({username, password}),
+        }).then((response) => response.json())
+        .then((data) => {
+            setData(data);
+            setIsLoading(false);
+        }).catch((error) => {
+            console.log(error);
+            setError(true);
+            setIsLoading(false);
+        });
+        
+
+    }   
+
     const [isVisible, setIsVisible] = useState(false);
     const toggleVisibility = () => setIsVisible((prev) => !prev);
     return (
@@ -13,10 +46,11 @@ export default function Login(){
             <Card>
                 <div className='flex justify-center items-center gap-10'>
                     <CardBody className='gap-2 size-96'>
-                        <Input label='Usuario' variant="bordered"/>
+                        <Input label='Usuario' variant="bordered" onChange={handleUsername}/>
                         <Input
                         label="Password"
                         variant="bordered"
+                        onChange={handlePassword}
                         endContent={
                             <button className="focus:outline-none" type="button" onClick={toggleVisibility}>
                             {isVisible ? (
@@ -29,7 +63,7 @@ export default function Login(){
                         type={isVisible ? "text" : "password"}
                         className="max-w-xs w-72"
                         />
-                        <Button color="primary" onClick={clickButton}> Iniciar sesion </Button>
+                        <Button color="primary" onClick={clickButton} isLoading={isLoading} onPress={login}> Iniciar sesion </Button>
                     </CardBody>
 
                     </div>
