@@ -7,9 +7,10 @@ import clickButton from "./LogicScript";
 export default function Login(){
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    const [error, setError] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-    const [data, setData] = useState(null);
+    const [isBadLogin, setIsBadLogin] = useState(false);
+    
+
 
     const handleUsername = (e: any) => {
         setUsername(e.target.value);
@@ -19,19 +20,32 @@ export default function Login(){
     }
     const login = async () => {
         setIsLoading(true);
-        fetch('http://127.0.0.1:8080/login', {
+        setIsBadLogin(false);
+        fetch('http://127.0.0.1:8081/login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({username, password}),
-        }).then((response) => response.json())
+        }).then((response) => {
+            if(response.ok){
+                setIsBadLogin(false);
+                return response.json();
+            } else{
+                setIsBadLogin(true);
+                setIsLoading(false);
+            }
+        })
         .then((data) => {
-            setData(data);
-            setIsLoading(false);
+            if(data){
+                localStorage.setItem('token', data.token);
+                setTimeout(()=>{
+                    location.reload()
+                }, 1000)
+                setIsLoading(false);
+            }
         }).catch((error) => {
-            console.log(error);
-            setError(true);
+            
             setIsLoading(false);
         });
         
@@ -46,7 +60,7 @@ export default function Login(){
             <Card>
                 <div className='flex justify-center items-center gap-10'>
                     <CardBody className='gap-2 size-96'>
-                        <Input label='Usuario' variant="bordered" onChange={handleUsername}/>
+                        <Input label='Usuario' variant="bordered" onChange={handleUsername} isInvalid={isBadLogin} color={isBadLogin ? 'danger' : undefined}/>
                         <Input
                         label="Password"
                         variant="bordered"
@@ -62,6 +76,9 @@ export default function Login(){
                         }
                         type={isVisible ? "text" : "password"}
                         className="max-w-xs w-72"
+                        errorMessage={isBadLogin && "Usuario o contraseña incorrectas"}
+                        isInvalid={isBadLogin}
+                        color={isBadLogin ? 'danger' : undefined}
                         />
                         <Button color="primary" onClick={clickButton} isLoading={isLoading} onPress={login}> Iniciar sesion </Button>
                     </CardBody>

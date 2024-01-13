@@ -1,10 +1,20 @@
 'use client';
-import React from 'react';
+import {useState} from 'react';
 import { Textarea, Modal, ModalBody, useDisclosure, ModalFooter, ModalContent, ModalHeader, Button } from '@nextui-org/react';
 import { PressEvent } from '@react-types/shared';
 
 export default function AddComputer(){
     const {isOpen, onOpen, onOpenChange} = useDisclosure();
+    const [data, setData] = useState({});
+    const [isLoading, setIsLoading] = useState(false);
+    const handleTokenChange = (event: any) => {
+        const token = atob(event.target.value);
+        const JSONdata = JSON.parse(token);
+        setData(JSONdata);
+    }
+
+
+
     return (
         <>
             <div className='rounded-full bottom-0 right-0 fixed m-5 bg-blue-400'>
@@ -12,19 +22,42 @@ export default function AddComputer(){
             </div>
             <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
                 <ModalContent>
-                    {(onClose: ((e: PressEvent) => void) | undefined) => (
+                    {(onClose: ((e: PressEvent) => void) | undefined) => {
+                        const registerComputer = async() => {
+                            setIsLoading(true);
+                            fetch('http://127.0.0.1:8081/addComputer', {
+                                method: 'POST',
+                                headers: {
+                                    'authorization': localStorage.getItem('token')!, 
+                                    'Content-Type': 'application/json',
+                                }, 
+                                body: JSON.stringify({data: [data]})
+                            }).then((response) =>   {
+                                if (response.ok){
+                                    setIsLoading(false);
+                                    onClose;
+                                } else {
+                                    setIsLoading(false);
+                                    onClose;
+                                }
+                            })
+                        }
+
+
+
+                     return (
                         <>
                         <ModalHeader>Agrega una computadora</ModalHeader>
                         <ModalBody>
-                            <Textarea placeholder='Introduce el token de acceso' label='Token de acceso' />
+                            <Textarea placeholder='Introduce el token de acceso' onChange={handleTokenChange} label='Token de acceso' />
                         </ModalBody>
                         <ModalFooter>
                             <Button onPress={onClose}>Cancelar</Button>
-                            <Button color='success' onPress={onClose}>Agregar</Button>
+                            <Button color='success' onPress={registerComputer} isLoading={isLoading}>Agregar</Button>
                         </ModalFooter>
                         </>
 
-                    )}
+                    )}}
                 </ModalContent>
             </Modal>
         </>

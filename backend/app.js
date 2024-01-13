@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const fs = require('fs');
-const bcrypt = require('bcrypt');
+const crypto = require('crypto');
 const os = require('os');
 const dotenv = require('dotenv');
 const { createInterface } = require('readline');
@@ -18,6 +18,13 @@ app.use(express.urlencoded({ extended: true }));
 
 
 const checkToken = (req, res, next) => {
+    const hash = crypto.createHash('sha256');
+    const salt = process.env.SALT;
+    const username = process.env.USERNAME;
+    const password = process.env.PASSWORD;
+    const textToCrypt = username + password + `${salt}`;
+    hash.update(textToCrypt);
+    const tokenAuth = hash.digest('hex');
     if (req.headers.authorization === tokenAuth){
         next();
     } else {
@@ -26,15 +33,11 @@ const checkToken = (req, res, next) => {
 }
 
 function generateTokenAuth(username, password){
-    const saltRounds = 10;
-    const textToCrypt = username + password;
-    bcrypt.hash(textToCrypt, saltRounds, (err, hash) =>{
-        if (err){
-            console.log(err);
-        } else {
-            return hash;
-        }
-    })
+    const hash = crypto.createHash('sha256');
+    const salt = process.env.SALT;
+    const textToCrypt = username + password + `${salt}`;
+    hash.update(textToCrypt);
+    return hash.digest('hex');
 }
 
 async function compareTokenAuth(tokenAuth, username, password){
@@ -70,7 +73,7 @@ function writeJsonFile(filepath, content){
     })
 }
 
-app.post('/login', (req, res, next) =>{
+app.post('/login', (req, res, body) => {
     const username = process.env.USERNAME;
     const password = process.env.PASSWORD;
     if (!req.body.username || !req.body.password){
@@ -78,7 +81,9 @@ app.post('/login', (req, res, next) =>{
     }
     if (req.body.username === username && req.body.password === password){
         tokenAuth = generateTokenAuth(username, password);
-        res.status(200).json({message: 'Login correcto', token: tokenAuth});
+        res.status(200).json({message: 'Autenticación correcta', token: tokenAuth});
+    } else {
+        res.status(401).json({message: 'Credenciales incorrectas'});
     }
 })
 
@@ -91,9 +96,10 @@ app.get('/computersListed', checkToken, (req, res, next) => {
 app.post('/addComputer', checkToken, (req, res, next) => {
     if ( req.body.data ) {
         const computers = readJsonFile('./data.json');
-        computers.push(req.body.data);
+        console.log(computers)
+        res.status(200).json(computers);
         writeJsonFile('./data.json', computers);
-        res.status(200).json({message: 'Computadora agregada correctamente'});
+        
     } else {
         res.status(400).json({message: 'Solicitud incorrecta'});
     }
@@ -101,6 +107,6 @@ app.post('/addComputer', checkToken, (req, res, next) => {
 })
 
 
-app.listen(8080, () => {
+app.listen(8081, () => {
     console.log('Servidor iniciado');
 })

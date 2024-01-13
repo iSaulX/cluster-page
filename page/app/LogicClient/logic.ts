@@ -1,5 +1,10 @@
 'use client';
 
 export default function isLogedIn():boolean{
-    return false;
+    const token: string | null = localStorage.getItem('token');
+    if(token){
+        return true;
+    } else {
+        return false;
+    }
 }
