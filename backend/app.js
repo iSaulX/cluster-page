@@ -4,9 +4,6 @@ const fs = require('fs');
 const crypto = require('crypto');
 const os = require('os');
 const dotenv = require('dotenv');
-const { createInterface } = require('readline');
-const { Buffer } = require('buffer');
-const { redirect } = require('next/dist/server/api-utils');
 const {createClient} = require('redis');
 
 
