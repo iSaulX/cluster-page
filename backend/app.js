@@ -2,7 +2,6 @@ const express = require('express');
 const cors = require('cors');
 const fs = require('fs');
 const crypto = require('crypto');
-const os = require('os');
 const dotenv = require('dotenv');
 const {createClient} = require('redis');
 
