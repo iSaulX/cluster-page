@@ -25,7 +25,7 @@ export default function AddComputer(){
                     {(onClose: ((e: PressEvent) => void) | undefined) => {
                         const registerComputer = async() => {
                             setIsLoading(true);
-                            fetch('http://127.0.0.1:8081/addComputer', {
+                            fetch('http://127.0.0.1:8080/addComputer', {
                                 method: 'POST',
                                 headers: {
                                     'authorization': localStorage.getItem('token')!, 

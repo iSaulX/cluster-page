@@ -3,13 +3,14 @@ import { useState } from "react";
 import {Button, Input, Card, CardBody} from '@nextui-org/react';
 import { EyeFilledIcon, EyeSlashFilledIcon } from "./Eyes";
 import clickButton from "./LogicScript";
-
+import HomePage from "../HomePage/HomePage";
+import isLogedIn from "../LogicClient/logic";
 export default function Login(){
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [isBadLogin, setIsBadLogin] = useState(false);
-    
+    const [isLoged, setIsLoged] = useState(isLogedIn());
 
 
     const handleUsername = (e: any) => {
@@ -21,7 +22,7 @@ export default function Login(){
     const login = async () => {
         setIsLoading(true);
         setIsBadLogin(false);
-        fetch('http://127.0.0.1:8081/login', {
+        fetch('http://127.0.0.1:8080/login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -39,10 +40,8 @@ export default function Login(){
         .then((data) => {
             if(data){
                 localStorage.setItem('token', data.token);
-                setTimeout(()=>{
-                    location.reload()
-                }, 1000)
                 setIsLoading(false);
+                setIsLoged(true);
             }
         }).catch((error) => {
             
@@ -54,7 +53,7 @@ export default function Login(){
 
     const [isVisible, setIsVisible] = useState(false);
     const toggleVisibility = () => setIsVisible((prev) => !prev);
-    return (
+    return ( isLoged ? <HomePage /> :
         <div className='flex justify-center items-center h-screen flex-col gap-5 '>
             <h1 className='text-left font-sans text-3xl font-black'>Iniciar sesion</h1>
             <Card>

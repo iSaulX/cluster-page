@@ -7,6 +7,7 @@ const dotenv = require('dotenv');
 const { createInterface } = require('readline');
 const { Buffer } = require('buffer');
 const { redirect } = require('next/dist/server/api-utils');
+const {createClient} = require('redis');
 
 
 const app = express();
@@ -15,7 +16,19 @@ app.use(cors());
 let tokenAuth; 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+const client = createClient({
+    password: process.env.REDIS_PASSWORD,
+    socket: {
+        host: process.env.REDIS_ENDPOINT,
+        port: 19138
+    }
+});
 
+client.connect();
+
+client.on('connect', () => {
+    console.log('Conectado a Redis');
+}); 
 
 const checkToken = (req, res, next) => {
     const hash = crypto.createHash('sha256');
@@ -40,38 +53,7 @@ function generateTokenAuth(username, password){
     return hash.digest('hex');
 }
 
-async function compareTokenAuth(tokenAuth, username, password){
-    const salt = process.env.SALT;
-    const textToCrypt = username + password;
-    try {
-        const hash = await bcrypt.compare(textToCrypt, tokenAuth);
-        return hash;
-    } catch (error) {
-        console.log(error);
-    }
-}
 
-
-function readJsonFile(filepath){
-    fs.readFile(filepath, 'utf-8', (err, data) => {
-        if (err){
-            throw new Error('Archivo no encontrado');
-        } else {
-            const json = JSON.parse(data);
-            return json;
-        }
-    })
-}
-
-function writeJsonFile(filepath, content){
-    fs.writeFile(filepath, JSON.stringify(content), 'utf-8', (err) => {
-        if (err){
-            throw new Error('Error al escribir el archivo');
-        } else {
-            console.log('Archivo escrito correctamente');
-        }
-    })
-}
 
 app.post('/login', (req, res, body) => {
     const username = process.env.USERNAME;
@@ -88,25 +70,36 @@ app.post('/login', (req, res, body) => {
 })
 
 
-app.get('/computersListed', checkToken, (req, res, next) => {
-    const computers = readJsonFile('./data.json');
-    res.status(200).json({computers: computers});
+app.get('/computersListed', checkToken, async(req, res, next) => {
+    const computersListed = [];
+    client.keys('*', (err, keys) => {
+        if (err) return console.log(err);
+        if (keys){
+            keys.forEach(key => {
+                client.get(key, (err, value) => {
+                    if (err) return console.log(err);
+                    if (value){
+                        computersListed.push(JSON.parse(value));
+                    }
+                })
+            })
+        }
+    })
+    res.status(200).json({message: 'Listado de computadoras', data: computersListed});
 });
 
-app.post('/addComputer', checkToken, (req, res, next) => {
-    if ( req.body.data ) {
-        const computers = readJsonFile('./data.json');
-        console.log(computers)
-        res.status(200).json(computers);
-        writeJsonFile('./data.json', computers);
-        
+app.post('/addComputer', checkToken, async (req, res, next) => {
+    if (req.body.data[0]) {
+        const computerName = req.body.data[0].computerName;
+        client.set(computerName, JSON.stringify(req.body.data[0]));
+        const datas = await client.get(computerName); // Utiliza el método getAsync para obtener el valor de forma asíncrona
+        res.status(200).json({ message: 'Computadora agregada correctamente', data: datas });
     } else {
-        res.status(400).json({message: 'Solicitud incorrecta'});
+        res.status(400).json({ message: 'Solicitud incorrecta' });
     }
-
 })
 
 
-app.listen(8081, () => {
+app.listen(8080, () => {
     console.log('Servidor iniciado');
 })
