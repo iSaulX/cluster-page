@@ -5,7 +5,7 @@ import isLogedIn from './LogicClient/logic';
 export default function Home() {
 	return (	
 		<>
-			{isLogedIn() ? <HomePage /> : <Login />}
+			<Login/>
 		</>
 	);
 }

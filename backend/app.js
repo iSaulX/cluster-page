@@ -49,7 +49,15 @@ function generateTokenAuth(username, password){
     return hash.digest('hex');
 }
 
-
+const getAllData = async() => {
+    const keys = await client.keys('*');
+    const computersListed = [];
+    for(let i = 0; i< keys.length; i++){
+        const data = await client.get(keys[i]);
+        computersListed.push(JSON.parse(data));
+    }
+    return computersListed;
+}
 
 app.post('/login', (req, res, body) => {
     const username = process.env.USERNAME;
@@ -67,20 +75,7 @@ app.post('/login', (req, res, body) => {
 
 
 app.get('/computersListed', checkToken, async(req, res, next) => {
-    const computersListed = [];
-    client.keys('*', (err, keys) => {
-        if (err) return console.log(err);
-        if (keys){
-            keys.forEach(key => {
-                client.get(key, (err, value) => {
-                    if (err) return console.log(err);
-                    if (value){
-                        computersListed.push(JSON.parse(value));
-                    }
-                })
-            })
-        }
-    })
+    const computersListed = await getAllData();
     res.status(200).json({message: 'Listado de computadoras', data: computersListed});
 });
 
@@ -88,7 +83,7 @@ app.post('/addComputer', checkToken, async (req, res, next) => {
     if (req.body.data[0]) {
         const computerName = req.body.data[0].computerName;
         client.set(computerName, JSON.stringify(req.body.data[0]));
-        const datas = await client.get(computerName); // Utiliza el método getAsync para obtener el valor de forma asíncrona
+        const datas = await client.get(computerName); 
         res.status(200).json({ message: 'Computadora agregada correctamente', data: datas });
     } else {
         res.status(400).json({ message: 'Solicitud incorrecta' });

@@ -35,8 +35,8 @@ export default function HomePage(){
     }, [])
     return(
         <div className='p-7 flex flex-row justify-between flex-wrap'>
-            {isLoading ? <SpinnerPage/> : computers.map((computer: any) => {
-                return <Computercard computerName={computer.computerName} endpoint={computer.endpoint} />
+            {isLoading ? <SpinnerPage/> : computers.map((computer: {computerName: string, endpoint: string}, iterator) => {
+                return <Computercard computerName={computer.computerName} endpoint={computer.endpoint} key={iterator}/>
             })}
             <LogOut />
             <AddComputer />
