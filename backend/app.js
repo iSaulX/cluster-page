@@ -75,8 +75,13 @@ app.post('/login', (req, res, body) => {
 
 
 app.get('/computersListed', checkToken, async(req, res, next) => {
-    const computersListed = JSON.parse(await client.get('database')).database;
-    res.status(200).json({message: 'Listado de computadoras', data: computersListed});
+    const computersListed = JSON.parse(await client.get('database'));
+    if (computersListed){
+        res.status(200).json({message: 'Listado de computadoras', data: computersListed.database});
+    } else {
+        res.status(400).json({message: 'No hay computadoras registradas'});
+    }
+    
 });
 
 app.get('/status/:computerName', checkToken, async(req, res, next) => {
@@ -106,6 +111,7 @@ app.post('/addComputer', checkToken, async (req, res, next) => {
         res.status(400).json({ message: 'Solicitud incorrecta' });
     }
 })
+
 
 
 app.listen(8080, () => {

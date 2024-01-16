@@ -68,12 +68,20 @@ const compareToken = (req, res, next) => {
     }
 }
 const checkToken = (req, res, next) => {
+    const hash = crypto.createHash('sha256');
+    const salt = process.env.SALT;
+    const username = process.env.USERNAME;
+    const password = process.env.PASSWORD;
+    const textToCrypt = username + password + `${salt}`;
+    hash.update(textToCrypt);
+    const tokenAuth = hash.digest('hex');
     if (req.headers.authorization === tokenAuth){
         next();
     } else {
         res.status(401).json({message: 'No autorizado'});
     }
 }
+
 
 app.use(cors());
 app.use(checkToken);
@@ -86,7 +94,7 @@ app.use(checkToken);
 
 app.get('/hits', (req, res, next) => {
     const dirname = __dirname;
-    const filePath = `${dirname}/python/hits.csv`;
+    const filePath = `${dirname}/hits.csv`;
     const checkFileExits = fs.existsSync(filePath);
     if (checkFileExits){
         res.status(200).sendFile(filePath);
@@ -95,8 +103,8 @@ app.get('/hits', (req, res, next) => {
     }
 })
 
-app.get('/status', (req, res, next) => {
-    const status = readJsonFile().status;
-    res.status(200).json({status});
-    
-})
+
+
+app.listen(5000, () => {
+    console.log('Servidor iniciado en el puerto 5000');
+});
