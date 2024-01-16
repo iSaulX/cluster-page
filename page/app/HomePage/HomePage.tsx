@@ -4,12 +4,18 @@ import AddComputer from './AddComputerr';
 import LogOut from './LogOut';
 import SpinnerPage from './Spinner';
 import { Computer } from './IconsHomePage';
+import { ReloadIcon} from './IconsHomePage';
+import { Button } from "@nextui-org/react";
 
 export default function HomePage(){
     const [isLoading, setIsLoading] = useState(true);
+    const [refreshisLoading, setRefreshIsLoading] = useState(false);
     const [computers, setComputers] = useState([]);
     const [error, setError] = useState(false);
     useEffect(() => {
+       loadingData();
+    }, [])
+    const loadingData = () => {
         fetch('http://127.0.0.1:8080/computersListed', {
             method: 'GET',
             headers: {
@@ -32,8 +38,7 @@ export default function HomePage(){
             setError(true);
             setIsLoading(false);
         })
-    }, [])
-
+    }
     const handleContentToShow = () =>{
         if(isLoading){
             return <SpinnerPage />
