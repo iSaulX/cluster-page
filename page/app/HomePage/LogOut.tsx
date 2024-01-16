@@ -16,8 +16,8 @@ export default function LogOut(){
     }
     return (
         <>
-            <div className='rounded-full top-0 right-0 fixed m-5 bg-red-800'>
-            <Button onPress={onOpen} className='rounded-full bg-red-800'><LogOutIcon/></Button>
+            <div className='rounded-full top-0 right-0 fixed m-5 '>
+            <Button isIconOnly onPress={onOpen} className=' bg-red-800'><LogOutIcon/></Button>
             </div>
             <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
                 <ModalContent>

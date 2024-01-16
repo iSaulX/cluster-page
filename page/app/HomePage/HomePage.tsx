@@ -3,6 +3,7 @@ import Computercard from './Computer';
 import AddComputer from './AddComputerr';
 import LogOut from './LogOut';
 import SpinnerPage from './Spinner';
+import { Computer } from './IconsHomePage';
 
 export default function HomePage(){
     const [isLoading, setIsLoading] = useState(true);
@@ -26,18 +27,32 @@ export default function HomePage(){
                 setIsLoading(false);
             } else{
                 setError(true);
-                setError(true);
             }
         }).catch((error) => {
             setError(true);
             setIsLoading(false);
         })
     }, [])
+
+    const handleContentToShow = () =>{
+        if(isLoading){
+            return <SpinnerPage />
+        } else if(error){
+            return <div className='flex align-center items-center justify-center h-screen w-screen'>
+                <h1 className='text-3xl'>Parece que no hay computadoras, empieza agregando una..</h1>
+            </div>
+
+        } else {
+            return (
+                <>
+                    {computers.map((computers: any, key: number) => <Computercard computerName={computers.computerName} endpoint={computers.endpoint} key={key} />)}
+                </>
+            )
+        }
+    }
     return(
-        <div className='p-7 flex flex-row justify-between flex-wrap'>
-            {isLoading ? <SpinnerPage/> : computers.map((computer: {computerName: string, endpoint: string}, iterator) => {
-                return <Computercard computerName={computer.computerName} endpoint={computer.endpoint} key={iterator}/>
-            })}
+        <div className='p-7 flex flex-row  flex-wrap'>
+            {handleContentToShow()}
             <LogOut />
             <AddComputer />
         </div>

@@ -1,11 +1,12 @@
 const express = require('express');
 const cors = require('cors');
 const fs = require('fs');
-const bcrypt = require('bcrypt');
+const crypto = require('crypto');
 const os = require('os');
 const dotenv = require('dotenv');
 const { createInterface } = require('readline');
 const { Buffer } = require('buffer');
+const { addHookAliases } = require('next/dist/server/require-hook');
 
 const app = express();
 
@@ -40,30 +41,32 @@ dotenv.config();
 
 let tokenAuth;
 
-
-function generateTokenAuth(username, password){
-    const salt = process.env.SALT;
-    const textToCrypt = username + password;
-    try {
-        const hash = bcrypt.hash(textToCrypt, salt);
-        return hash;
-    } catch (error) {
-        console.log(error);
-    }
-}
-
-function compareTokenAuth(tokenAuth, username, password){
-    const salt = process.env.SALT;
-    const textToCrypt = username + password;
-    try {
-        const hash = bcrypt.compare(textToCrypt, tokenAuth);
-        return hash;
-    } catch (error) {
-        console.log(error);
-    }
+function readJsonFile(){
+    const data = fs.readFileSync('./status.json');
+    const dataJson = JSON.parse(data);
+    return dataJson;
 }
 
 
+
+
+function generateTokenAuth(){
+    const username = process.env.USERNAME;
+    const password = process.env.PASSWORD;
+    const salt = process.env.SALT;
+    const textToCrypt = username + password + salt;
+    const hash = crypto.createHash('sha256');
+    hash.update(textToCrypt);
+    return hash.digest('hex');
+}
+
+const compareToken = (req, res, next) => {
+    if (req.headers.authorization === tokenAuth){
+        next();
+    } else {
+        res.status(401).json({message: 'No autorizado'});
+    }
+}
 const checkToken = (req, res, next) => {
     if (req.headers.authorization === tokenAuth){
         next();
@@ -75,3 +78,25 @@ const checkToken = (req, res, next) => {
 app.use(cors());
 app.use(checkToken);
 
+
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(checkToken);
+
+app.get('/hits', (req, res, next) => {
+    const dirname = __dirname;
+    const filePath = `${dirname}/python/hits.csv`;
+    const checkFileExits = fs.existsSync(filePath);
+    if (checkFileExits){
+        res.status(200).sendFile(filePath);
+    } else{
+        res.status(404).json({message: 'No se ha encontrado el archivo'});
+    }
+})
+
+app.get('/status', (req, res, next) => {
+    const status = readJsonFile().status;
+    res.status(200).json({status});
+    
+})

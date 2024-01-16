@@ -75,16 +75,33 @@ app.post('/login', (req, res, body) => {
 
 
 app.get('/computersListed', checkToken, async(req, res, next) => {
-    const computersListed = await getAllData();
+    const computersListed = JSON.parse(await client.get('database')).database;
     res.status(200).json({message: 'Listado de computadoras', data: computersListed});
 });
 
+app.get('/status/:computerName', checkToken, async(req, res, next) => {
+    const computerName = req.params.computerName;
+    const computer = JSON.parse(await client.get(computerName));
+    if (computer){
+        res.status(200).json({message: 'Estado de la computadora', data: computer});
+}})
+
+
+
 app.post('/addComputer', checkToken, async (req, res, next) => {
     if (req.body.data[0]) {
-        const computerName = req.body.data[0].computerName;
-        client.set(computerName, JSON.stringify(req.body.data[0]));
-        const datas = await client.get(computerName); 
-        res.status(200).json({ message: 'Computadora agregada correctamente', data: datas });
+        const database = await client.get('database');
+        if (database){
+            const data = JSON.parse(database);
+            data.database.push(req.body.data[0]);
+            await client.set('database', JSON.stringify(data));
+            const dataSent = await client.get('database');
+            res.status(200).json({message: 'Computadora agregada', data: JSON.parse(dataSent)});
+        } else{
+            const dataToSent = {'database': []};
+            dataToSent.database.push(req.body.data[0]);
+            await client.set('database', JSON.stringify(dataToSent));
+        }
     } else {
         res.status(400).json({ message: 'Solicitud incorrecta' });
     }
