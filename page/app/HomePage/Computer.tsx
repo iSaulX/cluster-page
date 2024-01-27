@@ -1,8 +1,10 @@
 'use client';
 import { Computer, StopIcon, PlayIcon, StatsIcon, DownloadIcon, ConfigurationIcon, UploadIcon, ReloadIcon  } from './IconsHomePage';
 import {useState, useEffect} from 'react';
-import { Card, CardBody, Dropdown, DropdownItem, DropdownTrigger, DropdownMenu, Button, Divider, DropdownSection, Tooltip, Skeleton, useDisclosure } from "@nextui-org/react";
-import ModalStats from './Modal';
+import { Card, CardBody, Dropdown, DropdownItem, DropdownTrigger, DropdownMenu, Button, Divider, DropdownSection, Tooltip, Skeleton } from "@nextui-org/react";
+import { useDisclosure, Modal, ModalBody, ModalHeader, ModalFooter,  ModalContent } from "@nextui-org/react";
+import { PressEvent } from '@react-types/shared';
+
 
 export default function Computercard(props: {computerName: string, endpoint: string}){
     const [endPoint, setEndPoint] = useState(props.endpoint);
@@ -13,7 +15,8 @@ export default function Computercard(props: {computerName: string, endpoint: str
     const [percentage, setPercentage] = useState('');
     const [status, setStatus] = useState('');
     const [stopLoading, setStopLoading] = useState(false);
-    const {isOpen, onOpen, onOpenChange} = useDisclosure();
+    const {isOpen, onOpen, onClose} = useDisclosure();
+    
 
     const getStatusData = () =>{
         fetch(`http://127.0.0.1:8080/status/${computerName}`, {
@@ -73,6 +76,9 @@ export default function Computercard(props: {computerName: string, endpoint: str
         }
     }
 
+    const handleOpen = () => {
+        onOpen();
+    }
     
     
 
@@ -105,17 +111,53 @@ export default function Computercard(props: {computerName: string, endpoint: str
                     </DropdownTrigger>
                     <DropdownMenu>
                         <DropdownSection title={'Acciones'} showDivider>
-                            <DropdownItem onPress={onOpen} description={'Regresa las estadisticas'} startContent={<StatsIcon/>}>Informacion</DropdownItem>
+                            <DropdownItem onPress={handleOpen} description={'Regresa las estadisticas'} startContent={<StatsIcon/>}>Informacion</DropdownItem>
                             <DropdownItem onPress={downloadFile} description={'Descarga la lista de archivos exitosos'} startContent={<DownloadIcon/>}>Descargar</DropdownItem>
                             <DropdownItem description={'Sube un archivo para cargar'} startContent={<UploadIcon/>}> Subir archivo</DropdownItem>
                         </DropdownSection>
-                            <DropdownSection title={'Zona de peligro'}>
-                            <DropdownItem className='text-danger' description={'Detiene el proceso y descarga la lista con los combos que faltan'} startContent={<PlayIcon/>}>Detener</DropdownItem>
+                        <DropdownSection title={'Zona de peligro'}>
+                            <DropdownItem className='text-danger' color='danger' description={'Detiene el proceso y descarga la lista con los combos que faltan'} startContent={<PlayIcon/>}>Detener</DropdownItem>
                         </DropdownSection>
                     </DropdownMenu>
                 </Dropdown>
             </CardBody>
         </Card>
+        <Modal backdrop='blur' isOpen={isOpen} onClose={onClose}>
+        <ModalContent>
+          {(onClose: any) => (
+            <>
+              <ModalHeader className="flex flex-col gap-1">Modal Title</ModalHeader>
+              <ModalBody>
+                <p> 
+                  Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                  Nullam pulvinar risus non risus hendrerit venenatis.
+                  Pellentesque sit amet hendrerit risus, sed porttitor quam.
+                </p>
+                <p>
+                  Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                  Nullam pulvinar risus non risus hendrerit venenatis.
+                  Pellentesque sit amet hendrerit risus, sed porttitor quam.
+                </p>
+                <p>
+                  Magna exercitation reprehenderit magna aute tempor cupidatat consequat elit
+                  dolor adipisicing. Mollit dolor eiusmod sunt ex incididunt cillum quis. 
+                  Velit duis sit officia eiusmod Lorem aliqua enim laboris do dolor eiusmod. 
+                  Et mollit incididunt nisi consectetur esse laborum eiusmod pariatur 
+                  proident Lorem eiusmod et. Culpa deserunt nostrud ad veniam.
+                </p>
+              </ModalBody>
+              <ModalFooter>
+                <Button color="danger" variant="light" onPress={onClose}>
+                  Close
+                </Button>
+                <Button color="primary" onPress={onClose}>
+                  Action
+                </Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
         </>
     )
 }

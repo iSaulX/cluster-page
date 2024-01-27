@@ -1,11 +1,9 @@
 'use client';
-import Login from "./Login/Login";
-import HomePage from "./HomePage/HomePage";
-import isLogedIn from './LogicClient/logic';
+import RouterApp from "./Router/Router";
 export default function Home() {
 	return (	
 		<>
-			<Login/>
+			<RouterApp/>
 		</>
 	);
 }

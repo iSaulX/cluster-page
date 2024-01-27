@@ -1,16 +1,23 @@
 'use client';
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {Button, Input, Card, CardBody} from '@nextui-org/react';
 import { EyeFilledIcon, EyeSlashFilledIcon } from "./Eyes";
 import clickButton from "./LogicScript";
 import HomePage from "../HomePage/HomePage";
 import isLogedIn from "../LogicClient/logic";
+import { redirect } from "react-router-dom"; 
 export default function Login(){
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [isBadLogin, setIsBadLogin] = useState(false);
-    const [isLoged, setIsLoged] = useState(isLogedIn());
+    const isLogedIn = !!localStorage.getItem('token');
+
+    useEffect(() => {
+        if(isLogedIn){
+            redirect('/home');
+        }
+    }, []);
 
 
     const handleUsername = (e: any) => {
@@ -41,7 +48,7 @@ export default function Login(){
             if(data){
                 localStorage.setItem('token', data.token);
                 setIsLoading(false);
-                setIsLoged(true);
+                redirect('/home');
             }
         }).catch((error) => {
             
@@ -53,7 +60,7 @@ export default function Login(){
 
     const [isVisible, setIsVisible] = useState(false);
     const toggleVisibility = () => setIsVisible((prev) => !prev);
-    return ( isLoged ? <HomePage /> :
+    return ( 
         <div className='flex justify-center items-center h-screen flex-col gap-5 '>
             <h1 className='text-left font-sans text-3xl font-black'>Iniciar sesion</h1>
             <Card>
